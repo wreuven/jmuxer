@@ -7,6 +7,10 @@ let minNaluPerChunk = 30,
     start = 0,
     end = 0,
     wss;
+
+// return a list of offsets to nal unit starts every 30 nal units 
+// offsets to nal units other than type 1 AND 5
+
 function extractChunks(buffer) {
     let i = 0,
         length = buffer.byteLength,
@@ -83,6 +87,8 @@ function openSocket() {
               console.log('WebSocket close');
           });
 
+        // send a chunk every 800 milli !! (note: this timing is kind of arbitrary)
+        
           interval = setInterval(function() {
             sendChunk();
           }, 800);
@@ -105,12 +111,15 @@ function writeChunk() {
 
 function sendChunk() {
     let anybodyThere = false;
+    
+    // wraparound at end
     if (current >= total) {
         current = 0;
         start = 0;
     }
     end = chunks[current];
     current++;
+    
     wss.clients.forEach(function each(client) {
         let chunk;
         if (client.readyState === WebSocket.OPEN) {
